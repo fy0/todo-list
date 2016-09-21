@@ -1,0 +1,239 @@
+<template>
+<div class="container">
+    <section class="todoapp">
+        <header class="header">
+            <h1>todos</h1>
+            <input class="new-todo"
+                autofocus autocomplete="off"
+                placeholder="我们准备做些什么？"
+                v-model="newTodo"
+                @keyup.enter="addTodo">
+        </header>
+        <section class="main" v-show="todos.length" v-cloak>
+            <input class="toggle-all" type="checkbox" v-model="allDone">
+            <ul class="todo-list">
+                <li v-for="todo in filteredTodos"
+                    class="todo"
+                    :key="todo.id"
+                    :class="{ completed: todo.completed, editing: todo == editedTodo }">
+                    <div class="view">
+                        <input class="toggle" type="checkbox" v-model="todo.completed">
+                        <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
+                        <button class="destroy" @click="removeTodo(todo)"></button>
+                    </div>
+                    <input class="edit" type="text"
+                        v-model="todo.title"
+                        v-todo-focus="todo == editedTodo"
+                        @blur="doneEdit(todo)"
+                        @keyup.enter="doneEdit(todo)"
+                        @keyup.esc="cancelEdit(todo)">
+                </li>
+            </ul>
+        </section>
+        <footer class="footer" v-show="todos.length" v-cloak>
+            <span class="todo-count">
+                <strong>{{ remaining }}</strong> {{ remaining | pluralize }} 剩余
+            </span>
+            <ul class="filters">
+                <li><router-link :class="{ selected: visibility == 'all' }" :to="{ path: '/' }">全部</router-link></li>
+                <li><router-link :class="{ selected: visibility == 'active' }" :to="{ path: '/active' }">待做</router-link></li>
+                <li><router-link :class="{ selected: visibility == 'completed' }" :to="{ path: '/completed' }">已完成</router-link></li>
+            </ul>
+            <button style="display:none" class="clear-completed" @click="removeCompleted" v-show="todos.length > remaining">
+                清除已完成
+            </button>
+        </footer>
+    </section>
+    <footer class="info">
+        <p>双击编辑待做事项</p>
+    </footer>
+</div>
+</template>
+
+<style>
+.topic-item > .title {
+
+}
+
+.topic-item > .info {
+    color: rgb(153, 153, 153);
+    font-size: small;
+}
+</style>
+
+<script>
+import Vue from 'vue'
+import api from "../netapi.js"
+import state from "../state.js"
+
+var STORAGE_KEY = 'sl-todos'
+var todoStorage = {
+    fetch: function () {
+        var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+        todos.forEach(function (todo, index) {
+            todo.id = index
+        })
+        todoStorage.uid = todos.length
+        return todos
+    },
+    save: function (todos) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+    }
+}
+
+// visibility filters
+var filters = {
+    all: function (todos) {
+        return todos
+    },
+    active: function (todos) {
+        return todos.filter(function (todo) {
+            return !todo.completed
+        })
+    },
+    completed: function (todos) {
+        return todos.filter(function (todo) {
+            return todo.completed
+        })
+    }
+}
+
+export default {
+    data () {
+        return {
+            state: state,
+            todos: todoStorage.fetch(),
+            newTodo: '',
+            editedTodo: null,
+            visibility: 'all'
+        }
+    },
+
+    filters: {
+        pluralize: function (n) {
+            //return n === 1 ? 'item' : 'items'
+            return '项'
+        }
+    },
+
+    computed: {
+        filteredTodos: function () {
+            return filters[this.visibility](this.todos)
+        },
+        remaining: function () {
+            return filters.active(this.todos).length
+        },
+        allDone: {
+            get: function () {
+                return this.remaining === 0
+            },
+            set: function (value) {
+                this.todos.forEach(function (todo) {
+                    todo.completed = value
+                })
+            }
+        }
+    },
+    methods: {
+        addTodo: function () {
+            var value = this.newTodo && this.newTodo.trim()
+            if (!value) {
+                return
+            }
+            this.todos.push({
+                id: todoStorage.uid++,
+                title: value,
+                completed: false
+            })
+            this.newTodo = ''
+        },
+
+        removeTodo: function (todo) {
+            this.todos.splice(this.todos.indexOf(todo), 1)
+        },
+
+        editTodo: function (todo) {
+            this.beforeEditCache = todo.title
+            this.editedTodo = todo
+        },
+
+        doneEdit: function (todo) {
+            if (!this.editedTodo) {
+                return
+            }
+            this.editedTodo = null
+            todo.title = todo.title.trim()
+            if (!todo.title) {
+                this.removeTodo(todo)
+            }
+        },
+
+        cancelEdit: function (todo) {
+            this.editedTodo = null
+            todo.title = this.beforeEditCache
+        },
+
+        removeCompleted: function () {
+            this.todos = filters.active(this.todos)
+        }
+    },
+    mounted: async function () {
+        Vue.set(this, 'visibility', this.$route.meta.visibility);
+
+        let ret = await api.topicRecent();
+        //this.$set(this, "page_info", ret.data);
+
+        ret = await api.userInfo();
+        if (ret.code == 0) {
+            Vue.set(state.data, 'user', ret.user);
+        }
+    },
+    beforeRouteEnter: (to, from, next) => {
+        next(vm => {
+            Vue.set(vm, 'visibility', vm.$route.meta.visibility);
+        });
+    },
+    watch: {
+        todos: {
+            handler: function (todos) {
+                todoStorage.save(todos)
+            },
+            deep: true
+        }
+    },
+
+  // a custom directive to wait for the DOM to be updated
+  // before focusing on the input field.
+  // https://vuejs.org/guide/custom-directive.html
+    directives: {
+        'todo-focus': function (el, value) {
+            if (value) {
+                el.focus()
+            }
+        }
+    }
+}
+
+</script>
+
+<style>
+    .nav {
+        float: right;
+    }
+
+    .topic-item {
+    }
+
+    .divider-line {
+        border-bottom: #EBF2F6 1px solid;
+        width: 50%;
+    }
+
+    .avatar {
+        float: left;
+        width: 50px;
+        height: 50px;
+        min-height: 50px;
+        border-bottom-width: 0px !important; /* fix for entry.css */
+    }
+</style>
