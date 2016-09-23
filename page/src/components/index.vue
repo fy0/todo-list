@@ -1,5 +1,14 @@
 <template>
 <div class="container">
+    <div class="nav" v-if="state.data.user">
+        你好，{{state.data.user.username}}
+        <router-link :to="{ path: '/signout' }">注销</router-link>
+
+    </div>
+    <div class="nav" v-else>
+        <router-link :to="{ path: '/signup' }">注册</router-link>
+        <router-link :to="{ path: '/signin' }">登录</router-link>
+    </div>
     <section class="todoapp">
         <header class="header">
             <h1>todos</h1>
@@ -51,6 +60,11 @@
 </template>
 
 <style>
+.nav {
+    top: 2%;
+    right: 3%;
+    position: absolute;
+}
 .topic-item > .title {
 
 }
@@ -69,6 +83,7 @@ import state from "../state.js"
 var STORAGE_KEY = 'sl-todos'
 var todoStorage = {
     fetch: function () {
+        //this.$set(this, "page_info", ret.data);
         var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
         todos.forEach(function (todo, index) {
             todo.id = index
@@ -140,6 +155,10 @@ export default {
             if (!value) {
                 return
             }
+            if (!state.data.user) {
+                alert('请先登录！');
+                return;
+            }
             this.todos.push({
                 id: todoStorage.uid++,
                 title: value,
@@ -178,12 +197,13 @@ export default {
         }
     },
     mounted: async function () {
-        Vue.set(this, 'visibility', this.$route.meta.visibility);
+        let ret2 = await api.todoGet();
+        console.log(111, ret2);
+        if (this.$route.meta.visibility) {
+            Vue.set(this, 'visibility', this.$route.meta.visibility);
+        }
 
-        let ret = await api.topicRecent();
-        //this.$set(this, "page_info", ret.data);
-
-        ret = await api.userInfo();
+        let ret = await api.userInfo();
         if (ret.code == 0) {
             Vue.set(state.data, 'user', ret.user);
         }

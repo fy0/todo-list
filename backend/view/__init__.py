@@ -239,7 +239,8 @@ class AjaxLoginView(LoginView):
 
     def prepare(self):
         self.set_header('Content-Type', 'application/json')
-        super(AjaxLoginView, self).prepare()
+        if not self.current_user():
+            return self.finish({'code': -255})
 
     def options(self, *args, **kwargs):
         self.finish()

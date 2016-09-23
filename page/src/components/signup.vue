@@ -1,5 +1,6 @@
 <template>
-<div class="">
+<div class="container">
+    <center> <!-- 不合HTML5，不标准，但没时间捣鼓了，就这样吧 -->
     <form method="post" class="pure-form" @submit.prevent="send">
         <fieldset>
             <div class="pure-controls">
@@ -19,11 +20,12 @@
                 <input type="password" name="password_again" id="password_again" value="">
             </div>
 
-           <div class="ic-form-row">
+           <div class="ic-form-row" style="margin-top:10px">
                 <input class="pure-button pure-button-primary" type="submit" name="" value="注 册">
             </div>
         </fieldset>
     </form>
+    </center>
 </div>
 </template>
 

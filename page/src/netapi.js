@@ -25,9 +25,9 @@ async function post (url, data, fix) { return do_fetch(url, "POST", data, fix); 
 
 
 export default {
-    topicGet: async function (id) {
+    todoGet: async function (id) {
         try {
-            let resp = await get(`${API_SERVER}/api/todo/get`);
+            let resp = await get(`${API_SERVER}/api/get_all`);
             if (!resp.ok) throw "NOT 200";
             let data = await resp.json();
             return data;
@@ -36,7 +36,18 @@ export default {
         }
     },
 
-    topicSet: async function (title, content) {
+    todoAdd: async function (title, content) {
+        try {
+            let resp = await post(`${API_SERVER}/api/todo/add`, {title, content});
+            if (!resp.ok) throw "NOT 200";
+            let data = await resp.json();
+            return data;
+        } catch(e) {
+            console.log("Oops, error", e);
+        }
+    },
+
+    todoSet: async function (title, content) {
         try {
             let resp = await post(`${API_SERVER}/api/todo/set`, {title, content});
             if (!resp.ok) throw "NOT 200";
@@ -82,7 +93,7 @@ export default {
 
     userSignout: async function() {
         try {
-            let resp = await post(`${API_SERVER}/api/signout`);
+            let resp = await get(`${API_SERVER}/api/signout`);
             if (!resp.ok) throw "NOT 200";
             let data = await resp.json();
             return data;

@@ -1,5 +1,6 @@
 <template>
-<div>
+<div class="container">
+    <center> <!-- 不合HTML5，不标准，但没时间捣鼓了，就这样吧 -->
     <form method="post" class="pure-form" @submit.prevent="send">
         <fieldset>
             <h3>登录</h3>
@@ -11,15 +12,14 @@
                 <label for="password">密码:</label>
                 <input type="password" name="password" id="password" value="">
             </div>
-            <div class="ic-form-row">
-                <label><input name="remember" type="checkbox" checked> 记住密码</label>
-            </div>
 
-            <div class="ic-form-row">
+           <div class="ic-form-row" style="margin-top:10px">
+                <label><input name="remember" type="checkbox" checked> 记住密码</label>
                 <input class="pure-button pure-button-primary" type="submit" value="登 录">
             </div>
         </fieldset>
     </form>
+    </center>
 </div>
 </template>
 
