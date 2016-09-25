@@ -25,11 +25,14 @@ async function post (url, data, fix) { return do_fetch(url, "POST", data, fix); 
 
 
 export default {
-    todoGet: async function (id) {
+    todoGet: async function () {
         try {
             let resp = await get(`${API_SERVER}/api/get_all`);
             if (!resp.ok) throw "NOT 200";
             let data = await resp.json();
+            for (let i of data.data) {
+                i.completed = i.state == 80;
+            }
             return data;
         } catch(e) {
             console.log("Oops, error", e);
@@ -47,9 +50,10 @@ export default {
         }
     },
 
-    todoSet: async function (title, content) {
+    todoBatchSave: async function (todos) {
         try {
-            let resp = await post(`${API_SERVER}/api/todo/set`, {title, content});
+            let todo_lst = JSON.stringify(todos);
+            let resp = await post(`${API_SERVER}/api/todo/batch_save`, {todo_lst});
             if (!resp.ok) throw "NOT 200";
             let data = await resp.json();
             return data;

@@ -48,7 +48,7 @@
                 <li><router-link :class="{ selected: visibility == 'active' }" :to="{ path: '/active' }">待做</router-link></li>
                 <li><router-link :class="{ selected: visibility == 'completed' }" :to="{ path: '/completed' }">已完成</router-link></li>
             </ul>
-            <button style="display:none" class="clear-completed" @click="removeCompleted" v-show="todos.length > remaining">
+            <button style="display:none" class="clear-completed" @click="removeCompleted">
                 清除已完成
             </button>
         </footer>
@@ -82,15 +82,6 @@ import state from "../state.js"
 
 var STORAGE_KEY = 'sl-todos'
 var todoStorage = {
-    fetch: function () {
-        //this.$set(this, "page_info", ret.data);
-        var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-        todos.forEach(function (todo, index) {
-            todo.id = index
-        })
-        todoStorage.uid = todos.length
-        return todos
-    },
     save: function (todos) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
     }
@@ -117,10 +108,11 @@ export default {
     data () {
         return {
             state: state,
-            todos: todoStorage.fetch(),
+            todos: [],
             newTodo: '',
             editedTodo: null,
-            visibility: 'all'
+            visibility: 'all',
+            saveEnable: false
         }
     },
 
@@ -150,7 +142,7 @@ export default {
         }
     },
     methods: {
-        addTodo: function () {
+        addTodo: async function () {
             var value = this.newTodo && this.newTodo.trim()
             if (!value) {
                 return
@@ -159,12 +151,14 @@ export default {
                 alert('请先登录！');
                 return;
             }
-            this.todos.push({
-                id: todoStorage.uid++,
-                title: value,
-                completed: false
-            })
-            this.newTodo = ''
+            let ret = await api.todoAdd(value);
+            if (ret.code == 0) {
+                ret.todo.completed = false;
+                this.todos.push(ret.todo);
+                this.newTodo = '';
+            } else {
+                alert(`发生了错误 ${ret.code}`);
+            }
         },
 
         removeTodo: function (todo) {
@@ -194,18 +188,32 @@ export default {
 
         removeCompleted: function () {
             this.todos = filters.active(this.todos)
-        }
+        },
+
+        doSave: _.debounce(async function () {
+            if (this.saveEnable) {
+                let ret = await api.todoBatchSave(this.todos);
+                console.log(111, ret);
+            }
+        }, 1000)
     },
     mounted: async function () {
-        let ret2 = await api.todoGet();
-        console.log(111, ret2);
+        let ret = await api.todoGet();
+        Vue.set(this, 'todos', ret.data);
+
         if (this.$route.meta.visibility) {
             Vue.set(this, 'visibility', this.$route.meta.visibility);
         }
 
-        let ret = await api.userInfo();
-        if (ret.code == 0) {
-            Vue.set(state.data, 'user', ret.user);
+        let uret = await api.userInfo();
+        if (uret.code == 0) {
+            Vue.set(state.data, 'user', uret.user);
+            Vue.nextTick(() => {
+                // 我本来希望操作一系列完成后才可以保存
+                // 避免操作中就触发 watch
+                // 可是事与愿违
+                this.saveEnable = true;
+            })
         }
     },
     beforeRouteEnter: (to, from, next) => {
@@ -216,7 +224,7 @@ export default {
     watch: {
         todos: {
             handler: function (todos) {
-                todoStorage.save(todos)
+                this.doSave();
             },
             deep: true
         }

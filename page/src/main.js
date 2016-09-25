@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
+import "lodash"
 import "purecss"
 import "./assets/css/base.css"
 import api from "./netapi.js"

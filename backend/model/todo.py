@@ -27,8 +27,17 @@ class Todo(BaseModel):
     last_edit_user = ForeignKeyField(User, related_name="last_edit_user_id", null=True)
     content = CharField(max_length=5000)
 
+    priority = IntegerField(default=0) # 紧急、暂缓、长期
+    category = IntegerField(default=0) # 后端、前端、TODO
+    partner1 = ForeignKeyField(User, related_name="fk_partner1", null=True) # 最多允许三个人从事同一任务
+    partner2 = ForeignKeyField(User, related_name="fk_partner2", null=True)
+    partner3 = ForeignKeyField(User, related_name="fk_partner3", null=True)
+
     sticky_weight = IntegerField(index=True, default=0)  # 置顶权重
     weight = IntegerField(index=True, default=0) # 排序权值，越大越靠前，默认权重与id相同
+
+    class Meta:
+        db_table = 'todo'
 
     def can_edit(self, user):
         if self.user == user:

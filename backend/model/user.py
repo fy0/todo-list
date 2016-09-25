@@ -37,6 +37,8 @@ class User(BaseModel):
     key = TextField(index=True)
     level = IntegerField()
 
+    score = IntegerField(index=True, default=0) # 分数
+
     reg_time = BigIntegerField()
     key_time = BigIntegerField()
 
