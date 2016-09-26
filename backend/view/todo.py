@@ -1,3 +1,4 @@
+import json
 
 import config
 from model.todo import Todo
@@ -21,17 +22,16 @@ class TodoAdd(AjaxView):
 @route('/api/todo/batch_save', name='todo_batch_save')
 class TodoBatchSave(AjaxView):
     def post(self):
-        todo_lst = self.get_argument('todo_lst', '[]')
-        print(todo_lst)
+        user = self.current_user()
+        if not user:
+            return self.finish({'code': -255})
+        todo_text = self.get_argument('todo_lst', '[]')
+        todo_lst = json.loads(todo_text)
+        for i in todo_lst:
+            t = Todo.get_by_pk(i['id'])
+            if t.can_edit(user):
+                t.edit(i, user)
         self.finish({'code': 0})
-        return
-        title = self.get_argument('title', '').strip()
-        content = self.get_argument('content', '').strip()
-        if title and config.TITLE_LENGTH_MIN <= len(title) <= config.TITLE_LENGTH_MAX:
-            t = Todo.new(title, self.current_user() or 0, content)
-        else:
-            # 非标准提交
-            self.finish({'code': -1})
 
 
 @route('/api/todo/(\d+)', name='todo')

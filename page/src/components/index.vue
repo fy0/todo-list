@@ -193,7 +193,7 @@ export default {
         doSave: _.debounce(async function () {
             if (this.saveEnable) {
                 let ret = await api.todoBatchSave(this.todos);
-                console.log(111, ret);
+                console.log('保存完毕', ret)
             }
         }, 1000)
     },

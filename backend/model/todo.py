@@ -48,6 +48,14 @@ class Todo(BaseModel):
             self.title = data['title']
         if 'content' in data:
             self.content = data['content']
+        if 'priority' in data:
+            self.priority = data['priority']
+        if 'category' in data:
+            self.category = data['category']
+        if 'state' in data:
+            self.state = data['state']
+        if 'completed' in data:
+            self.state = TODO_STATE.DONE if data['completed'] else TODO_STATE.NORMAL
         self.last_edit_user = user
         self.edit_time = int(time.time())
         self.save()
@@ -74,12 +82,15 @@ class Todo(BaseModel):
         return q.count(), q
 
     @classmethod
-    def get_list_by_board(cls, board):
-        q = cls.select().where(cls.board==board, cls.state>TODO_STATE.HIDE)\
-                .order_by(cls.sticky_weight.desc(), cls.weight.desc(), cls.time.desc())
-        return q.count(), q
-
-    @classmethod
     def get_list_by_user(cls, user):
         q = cls.select().where(cls.user==user, cls.state>TODO_STATE.HIDE)
         return q.count(), q
+
+    def to_dict(self):
+        ret = super().to_dict()
+        ret['user'] = self.user.to_dict()
+        ret['partner1'] = self.partner1.to_dict() if self.partner1 else None
+        ret['partner2'] = self.partner2.to_dict() if self.partner2 else None
+        ret['partner3'] = self.partner3.to_dict() if self.partner3 else None
+        ret['completed'] = self.state == TODO_STATE.DONE
+        return ret
