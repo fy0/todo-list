@@ -50,6 +50,17 @@ export default {
         }
     },
 
+    todoRemove: async function (todo_id) {
+        try {
+            let resp = await post(`${API_SERVER}/api/todo/remove`, {'todo_id': todo_id});
+            if (!resp.ok) throw "NOT 200";
+            let data = await resp.json();
+            return data;
+        } catch(e) {
+            console.log("Oops, error", e);
+        }
+    },
+
     todoBatchSave: async function (todos) {
         try {
             let todo_lst = JSON.stringify(todos);

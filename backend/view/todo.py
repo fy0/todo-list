@@ -7,7 +7,7 @@ from view import route, AjaxView, AjaxLoginView, url_for
 
 
 @route('/api/todo/add', name='todo_add')
-class TodoAdd(AjaxView):
+class TodoAdd(AjaxLoginView):
     def post(self):
         title = self.get_argument('title', '').strip()
         content = self.get_argument('content', '').strip()
@@ -19,14 +19,27 @@ class TodoAdd(AjaxView):
             self.finish({'code': -1})
 
 
-@route('/api/todo/batch_save', name='todo_batch_save')
-class TodoBatchSave(AjaxView):
+@route('/api/todo/remove', name='todo_remove')
+class TodoRemove(AjaxLoginView):
     def post(self):
-        user = self.current_user()
-        if not user:
-            return self.finish({'code': -255})
+        todo_id = self.get_argument('todo_id')
+        if todo_id:
+            todo = Todo.get_by_pk(todo_id)
+            if todo and todo.can_edit(self.current_user()):
+                todo.remove()
+                self.finish({'code': 0})
+            else:
+                self.finish({'code': -2})
+        else:
+            self.finish({'code': -1})
+
+
+@route('/api/todo/batch_save', name='todo_batch_save')
+class TodoBatchSave(AjaxLoginView):
+    def post(self):
         todo_text = self.get_argument('todo_lst', '[]')
         todo_lst = json.loads(todo_text)
+        user = self.current_user()
         for i in todo_lst:
             t = Todo.get_by_pk(i['id'])
             if t.can_edit(user):

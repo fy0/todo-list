@@ -224,7 +224,7 @@ class AjaxView(View):
         if self.request.body and self.request.headers.get("Content-Type", "").startswith('application/json'):
             body_args = json.loads(self.decode_argument(self.request.body))
             for k, v in body_args.items():
-                self.request.arguments.setdefault(k, []).extend([v])
+                self.request.arguments.setdefault(k, []).extend([str(v)])
         self.set_header('Content-Type', 'application/json')
         super(AjaxView, self).prepare()
 
@@ -238,6 +238,11 @@ class AjaxLoginView(LoginView):
         pass
 
     def prepare(self):
+        # body arguments 的补丁
+        if self.request.body and self.request.headers.get("Content-Type", "").startswith('application/json'):
+            body_args = json.loads(self.decode_argument(self.request.body))
+            for k, v in body_args.items():
+                self.request.arguments.setdefault(k, []).extend([str(v)])
         self.set_header('Content-Type', 'application/json')
         if not self.current_user():
             return self.finish({'code': -255})

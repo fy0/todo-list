@@ -80,12 +80,6 @@ import Vue from 'vue'
 import api from "../netapi.js"
 import state from "../state.js"
 
-var STORAGE_KEY = 'sl-todos'
-var todoStorage = {
-    save: function (todos) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-    }
-}
 
 // visibility filters
 var filters = {
@@ -135,9 +129,10 @@ export default {
                 return this.remaining === 0
             },
             set: function (value) {
-                this.todos.forEach(function (todo) {
+                // TODO: 这一下把任务全都完成了，可不能要。临时隐藏起来以作他用
+                /*this.todos.forEach(function (todo) {
                     todo.completed = value
-                })
+                })*/
             }
         }
     },
@@ -161,8 +156,13 @@ export default {
             }
         },
 
-        removeTodo: function (todo) {
-            this.todos.splice(this.todos.indexOf(todo), 1)
+        removeTodo: async function (todo) {
+            let ret = await api.todoRemove(todo.id);
+            if (ret.code == 0) {
+                this.todos.splice(this.todos.indexOf(todo), 1)
+            } else {
+                alert(`没有权限或者是参数错误 ${ret.code}`);
+            }
         },
 
         editTodo: function (todo) {
@@ -195,7 +195,7 @@ export default {
                 let ret = await api.todoBatchSave(this.todos);
                 console.log('保存完毕', ret)
             }
-        }, 1000)
+        }, 700)
     },
     mounted: async function () {
         let ret = await api.todoGet();

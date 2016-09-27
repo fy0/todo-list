@@ -52,12 +52,22 @@ class Todo(BaseModel):
             self.priority = data['priority']
         if 'category' in data:
             self.category = data['category']
+
+        last_state = self.state
         if 'state' in data:
             self.state = data['state']
         if 'completed' in data:
             self.state = TODO_STATE.DONE if data['completed'] else TODO_STATE.NORMAL
+        if last_state == TODO_STATE.NORMAL and self.state == TODO_STATE.DONE:
+            # TODO: 日后做成 参与 - 完成 的形式
+            # 现在先暂且只保留上数据
+            self.partner1 = user
         self.last_edit_user = user
         self.edit_time = int(time.time())
+        self.save()
+
+    def remove(self):
+        self.state = TODO_STATE.DEL
         self.save()
 
     @classmethod
