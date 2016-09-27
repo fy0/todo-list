@@ -42,8 +42,8 @@ class TodoBatchSave(AjaxLoginView):
         user = self.current_user()
         for i in todo_lst:
             t = Todo.get_by_pk(i['id'])
-            if t.can_edit(user):
-                t.edit(i, user)
+            #if t.can_edit(user):  # 姑且不对权限做限制
+            t.edit(i, user)
         self.finish({'code': 0})
 
 

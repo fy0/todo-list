@@ -28,6 +28,10 @@
                     <div class="view">
                         <input class="toggle" type="checkbox" v-model="todo.completed">
                         <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
+                        <span class="info">
+                            <span class="author">{{todo.user.username}}</span>
+                            <span class="time">{{time_to_text(todo.time)}}</span>
+                        </span>
                         <button class="destroy" @click="removeTodo(todo)"></button>
                     </div>
                     <input class="edit" type="text"
@@ -65,11 +69,24 @@
     right: 3%;
     position: absolute;
 }
-.topic-item > .title {
 
+.view > .info {
+    position: absolute;
+    right: 50px;
+    top: 0;
+    bottom: 0;
+    height: 40px;
+    margin: auto 0;
+    text-align: right;
+    line-height: 40px;
 }
 
-.topic-item > .info {
+.view > .info > .author {
+    color: rgb(15, 175, 175);
+    font-size: small;
+}
+
+.view > .info > .time {
     color: rgb(153, 153, 153);
     font-size: small;
 }
@@ -149,7 +166,7 @@ export default {
             let ret = await api.todoAdd(value);
             if (ret.code == 0) {
                 ret.todo.completed = false;
-                this.todos.push(ret.todo);
+                this.todos.splice(0, 0, ret.todo);
                 this.newTodo = '';
             } else {
                 alert(`发生了错误 ${ret.code}`);
@@ -189,6 +206,8 @@ export default {
         removeCompleted: function () {
             this.todos = filters.active(this.todos)
         },
+
+        time_to_text: $.time_to_text,
 
         doSave: _.debounce(async function () {
             if (this.saveEnable) {
