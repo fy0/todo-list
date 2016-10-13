@@ -97,6 +97,7 @@ import Vue from 'vue'
 import api from "../netapi.js"
 import state from "../state.js"
 
+let vm = null; // tmp fix for router callback bug
 
 // visibility filters
 var filters = {
@@ -217,6 +218,7 @@ export default {
         }, 700)
     },
     mounted: async function () {
+        vm = this;
         let ret = await api.todoGet();
         Vue.set(this, 'todos', ret.data);
 
@@ -236,9 +238,15 @@ export default {
         }
     },
     beforeRouteEnter: (to, from, next) => {
-        next(vm => {
+        /*next(vm => {
             Vue.set(vm, 'visibility', vm.$route.meta.visibility);
-        });
+        });*/
+        Vue.nextTick(() => {
+            if (vm) {
+                Vue.set(vm, 'visibility', vm.$route.meta.visibility);
+            }
+        })
+        next();
     },
     watch: {
         todos: {

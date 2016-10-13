@@ -17,6 +17,7 @@ Vue.use(VueRouter)
 
 let signOut = function (to, from, next) {
     api.userSignout();
+    next('/');
 }
 
 var routes = [
