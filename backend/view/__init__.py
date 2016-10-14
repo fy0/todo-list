@@ -180,7 +180,7 @@ class View(tornado.web.RequestHandler):
         super(View, self).flush(include_footers, callback)
 
     def current_user(self):
-        key = self.get_secure_cookie('u')
+        key = self.get_secure_cookie('ut')
         return User.get_by_key(key)
 
     def is_admin(self):

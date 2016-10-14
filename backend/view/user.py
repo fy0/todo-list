@@ -18,7 +18,7 @@ class SignIn(AjaxView):
 
         if not error_info:
             expires = 30 if remember else None
-            self.set_secure_cookie("u", u.key, expires_days=expires)
+            self.set_secure_cookie("ut", u.key, expires_days=expires)
             return self.finish({'code': 0, 'msg': '登陆成功！'})
 
         return self.finish({'code': -1, 'error_msgs': error_info})
@@ -34,7 +34,7 @@ class SignOut(AjaxView):
 @route('/api/signout', name='signout')
 class SignOut(AjaxLoginView):
     def get(self):
-        self.clear_cookie('u')
+        self.clear_cookie('ut')
         return self.finish({'code': 0, 'msg': '您已成功登出！'})
 
 
