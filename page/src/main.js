@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 
 import "lodash"
 import "purecss"
+import "babel-polyfill"
 import "./assets/css/base.css"
 import api from "./netapi.js"
 import tools from "./tools.js"
@@ -17,6 +18,7 @@ Vue.use(VueRouter)
 
 let signOut = function (to, from, next) {
     api.userSignout();
+    Vue.delete(state.data, 'user');
     next('/');
 }
 

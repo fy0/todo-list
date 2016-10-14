@@ -72,13 +72,13 @@
 
 .view > .info {
     position: absolute;
-    right: 50px;
+    right: 38px;
     top: 0;
     bottom: 0;
-    height: 40px;
+    height: 38px;
     margin: auto 0;
     text-align: right;
-    line-height: 40px;
+    line-height: 39px;
 }
 
 .view > .info > .author {
@@ -170,7 +170,7 @@ export default {
                 this.todos.splice(0, 0, ret.todo);
                 this.newTodo = '';
             } else {
-                alert(`发生了错误 ${ret.code}`);
+                alert(`发生了错误，文本是不是过长了？ ${ret.code}`);
             }
         },
 
@@ -179,7 +179,7 @@ export default {
             if (ret.code == 0) {
                 this.todos.splice(this.todos.indexOf(todo), 1)
             } else {
-                alert(`没有权限或者是参数错误 ${ret.code}`);
+                alert(`发生了错误，你是否在试图删除他人建立的 TODO？ ${ret.code}`);
             }
         },
 
