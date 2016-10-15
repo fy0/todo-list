@@ -42,7 +42,9 @@
                                 <span class="partner" v-if="todo.partner1">{{todo.partner1.username}}</span>
                             </div>
                         </span>
-                        <button class="destroy" @click="removeTodo(todo)"></button>
+                        <div class="right">
+                            <button class="destroy" @click="removeTodo(todo)"></button>
+                        </div>
                     </div>
                     <input class="edit" type="text"
                         v-model="todo.title"

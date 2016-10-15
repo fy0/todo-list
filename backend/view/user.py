@@ -1,5 +1,5 @@
 # coding:utf-8
-
+import config
 from view import route, AjaxView, AjaxLoginView
 from model.user import User
 
@@ -12,6 +12,11 @@ class SignIn(AjaxView):
         remember = self.get_argument('remember', False)
 
         error_info = []
+
+        if not config.REGISTER_OPEN:
+            error_info.append("抱歉，注册未开放")
+            return self.finish({'code': -1, 'error_msgs': error_info})
+
         u = User.auth(username, password)
         if not u:
             error_info.append("帐号或密码错误！")

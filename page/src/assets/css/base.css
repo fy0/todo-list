@@ -228,18 +228,22 @@ label[for='toggle-all'] {
 	text-decoration: line-through;
 }
 
-.todo-list li .destroy {
-	display: none;
-	position: absolute;
-	top: 0;
-	right: 0px;
-	bottom: 0;
+.todo-list li .right {
 	width: 40px;
-	height: 40px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0px;
+    display: table;
+    margin: auto 0;
+}
+
+.todo-list li .destroy {
+	width: 40px;
 	margin: auto 0;
 	font-size: 30px;
 	color: #cc9a9a;
-	margin-bottom: 11px;
+    display: none;
 	transition: color 0.2s ease-out;
 }
 

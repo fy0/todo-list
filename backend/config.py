@@ -14,6 +14,8 @@ TITLE_LENGTH_MAX = 100  # 发表主题的标题最长长度
 TOPIC_PAGE_SIZE = 20  # 每页主题数量
 REPLY_PAGE_SIZE = 30  # 每页评论数量
 
+REGISTER_OPEN = True
+
 try:
     from private import *
 except:
