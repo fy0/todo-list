@@ -232,7 +232,7 @@ label[for='toggle-all'] {
 	display: none;
 	position: absolute;
 	top: 0;
-	right: 10px;
+	right: 0px;
 	bottom: 0;
 	width: 40px;
 	height: 40px;

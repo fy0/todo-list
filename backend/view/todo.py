@@ -40,11 +40,13 @@ class TodoBatchSave(AjaxLoginView):
         todo_text = self.get_argument('todo_lst', '[]')
         todo_lst = json.loads(todo_text)
         user = self.current_user()
+        mods = []
         for i in todo_lst:
             t = Todo.get_by_pk(i['id'])
             #if t.can_edit(user):  # 姑且不对权限做限制
-            t.edit(i, user)
-        self.finish({'code': 0})
+            if t.edit(i, user):
+                mods.append(t.to_dict())
+        self.finish({'code': 0, 'modified': mods})
 
 
 @route('/api/todo/(\d+)', name='todo')

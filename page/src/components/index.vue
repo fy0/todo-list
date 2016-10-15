@@ -29,8 +29,18 @@
                         <input class="toggle" type="checkbox" v-model="todo.completed">
                         <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
                         <span class="info">
-                            <span class="author">{{todo.user.username}}</span>
-                            <span class="time">{{time_to_text(todo.time)}}</span>
+                            <div>
+                                <span class="author">{{todo.user.username}}</span>
+                                <span class="time">{{time_to_text(todo.time)}}</span>
+                            </div>
+                            <div v-if="todo.completed">
+                                <span>{{time_to_text(todo.done_time)}}</span>
+                                <span style="color:#000">完成</span>
+                            </div>
+                            <div v-if="todo.completed">
+                                <span>by:</span>
+                                <span class="partner" v-if="todo.partner1">{{todo.partner1.username}}</span>
+                            </div>
                         </span>
                         <button class="destroy" @click="removeTodo(todo)"></button>
                     </div>
@@ -75,20 +85,30 @@
     right: 38px;
     top: 0;
     bottom: 0;
-    height: 38px;
     margin: auto 0;
     text-align: right;
-    line-height: 39px;
+    display: table;
 }
 
-.view > .info > .author {
+.view > .info > div:first-child {
+}
+
+.view > .info div {
+    line-height: 15px;
+}
+
+.view > .info .author {
     color: rgb(15, 175, 175);
     font-size: small;
 }
 
-.view > .info > .time {
+.view > .info .time {
     color: rgb(153, 153, 153);
     font-size: small;
+}
+
+.view > .info .partner {
+    color: rgb(175, 15, 175);
 }
 </style>
 
@@ -213,6 +233,15 @@ export default {
         doSave: _.debounce(async function () {
             if (this.saveEnable) {
                 let ret = await api.todoBatchSave(this.todos);
+                let todos = {}
+                for (let i of this.todos) {
+                    todos[i.id] = i;
+                }
+                for (let i of ret.modified) {
+                    for (let k of Object.keys(todos[i.id])) {
+                        todos[i.id][k] = i[k];
+                    }
+                }
                 console.log('保存完毕', ret)
             }
         }, 700)

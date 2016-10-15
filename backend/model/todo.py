@@ -24,6 +24,7 @@ class Todo(BaseModel):
     state = IntegerField(default=TODO_STATE.NORMAL, index=True)
 
     edit_time = BigIntegerField(index=True, null=True)
+    done_time = BigIntegerField(index=True, null=True)
     last_edit_user = ForeignKeyField(User, related_name="last_edit_user_id", null=True)
     content = CharField(max_length=5000)
 
@@ -44,6 +45,7 @@ class Todo(BaseModel):
             return True
 
     def edit(self, data, user):
+        old = self.to_dict()
         if 'title' in data:
             self.title = data['title']
         if 'content' in data:
@@ -62,9 +64,24 @@ class Todo(BaseModel):
             # TODO: 日后做成 参与 - 完成 的形式
             # 现在先暂且只保留上数据
             self.partner1 = user
-        self.last_edit_user = user
-        self.edit_time = int(time.time())
-        self.save()
+            if not self.done_time:
+                self.done_time = int(time.time())
+
+        is_modified = False
+        for k, v in old.items():
+            if not isinstance(v, dict) and getattr(self, k) != v:
+                is_modified = True
+                break
+
+        if is_modified:
+            self.last_edit_user = user
+            self.edit_time = int(time.time())
+            self.save()
+        return is_modified
+
+    @property
+    def completed(self):
+        return self.state == TODO_STATE.DONE
 
     def remove(self):
         self.state = TODO_STATE.DEL
@@ -99,6 +116,7 @@ class Todo(BaseModel):
     def to_dict(self):
         ret = super().to_dict()
         ret['user'] = self.user.to_dict()
+        ret['last_edit_user'] = self.user.to_dict()
         ret['partner1'] = self.partner1.to_dict() if self.partner1 else None
         ret['partner2'] = self.partner2.to_dict() if self.partner2 else None
         ret['partner3'] = self.partner3.to_dict() if self.partner3 else None
