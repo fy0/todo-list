@@ -143,6 +143,7 @@ export default {
         return {
             state: state,
             todos: [],
+            last_save: {},
             newTodo: '',
             editedTodo: null,
             visibility: 'all',
@@ -234,14 +235,24 @@ export default {
 
         doSave: _.debounce(async function () {
             if (this.saveEnable) {
-                let ret = await api.todoBatchSave(this.todos);
                 let todos = {}
+                let modified = []
+                for (let i of this.todos) todos[i.id] = i;
+
                 for (let i of this.todos) {
-                    todos[i.id] = i;
+                    let old = this.last_save[i.id];
+                    if (!_.isEqual(i, old)) {
+                        modified.push(i);
+                    }
                 }
+
+                let ret = await api.todoBatchSave(this.todos);
+                if (ret.code != 0) return;
                 for (let i of ret.modified) {
-                    for (let k of Object.keys(todos[i.id])) {
+                    for (let k of Object.keys(i)) {
                         todos[i.id][k] = i[k];
+                        if (this.last_save[i.id] == null) this.last_save[i.id] = {};
+                        this.last_save[i.id][k] = i[k];
                     }
                 }
                 console.log('保存完毕', ret)
@@ -252,6 +263,10 @@ export default {
         vm = this;
         let ret = await api.todoGet();
         Vue.set(this, 'todos', ret.data);
+
+        for (let i of _.cloneDeep(ret.data)) {
+            this.last_save[i.id] = i;
+        }
 
         if (this.$route.meta.visibility) {
             Vue.set(this, 'visibility', this.$route.meta.visibility);
